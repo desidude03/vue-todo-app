@@ -45,6 +45,18 @@
 <script>
 import axios from 'axios';
 
+axios.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+});
+
 export default {
   data() {
     return {
@@ -57,22 +69,14 @@ export default {
   methods: {
     async fetchTodos() {
       try {
-        const token = localStorage.getItem('token');
-        const headers = {
-          'Authorization': `Bearer ${token}`
-        };
-        const response = await axios.get('http://127.0.0.1:8000/api/todos', { headers });
+        const response = await axios.get('http://127.0.0.1:8000/api/todos');
         this.todos = response.data.data;
       } catch (error) {
         console.error('Error fetching todos:', error);
       }
     },
     async deleteTodo(id) {
-      const token = localStorage.getItem('token');
-      const headers = {
-        'Authorization': `Bearer ${token}`
-      };
-      const response = await axios.delete(`http://127.0.0.1:8000/api/todos/${id}`, { headers });
+      const response = await axios.delete(`http://127.0.0.1:8000/api/todos/${id}`);
       this.$router.push('/todos');
       this.fetchTodos();
       console.log(response, 'response')

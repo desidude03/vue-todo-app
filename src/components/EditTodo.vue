@@ -21,6 +21,18 @@
 <script>
 import axios from 'axios';
 
+axios.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+});
+
 export default {
   props: ['id'],
   data() {
@@ -34,11 +46,7 @@ export default {
   methods: {
     async fetchTodo() {
       try {
-        const token = localStorage.getItem('token');
-        const headers = {
-          'Authorization': `Bearer ${token}`
-        };
-        const response = await axios.get(`http://127.0.0.1:8000/api/todos/${this.$route.params.id}`, { headers });
+        const response = await axios.get(`http://127.0.0.1:8000/api/todos/${this.$route.params.id}`);
         this.editedTodo = response.data.data;
       } catch (error) {
         console.error('Error fetching todo:', error);
@@ -46,11 +54,7 @@ export default {
     },
     async updateTodo() {
       try {
-        const token = localStorage.getItem('token');
-        const headers = {
-          'Authorization': `Bearer ${token}`
-        };
-        await axios.put(`http://127.0.0.1:8000/api/todos/${this.$route.params.id}`, this.editedTodo, { headers });
+        await axios.put(`http://127.0.0.1:8000/api/todos/${this.$route.params.id}`, this.editedTodo);
         // Redirect to todo list after update
         this.$router.push('/todos');
       } catch (error) {
